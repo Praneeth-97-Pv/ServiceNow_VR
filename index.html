@@ -1,0 +1,146 @@
+<!doctype html>
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta content="ServiceNow Vulnerability Response technical documentation, enterprise vulnerability workflows and API integration." name="description"/>
+<title>Enterprise Vulnerability Management &amp; Remediation Automation</title>
+<style>
+:root{--ink:#172b4d;--muted:#58677b;--line:#dce5ee;--accent:#245a94;--pale:#edf5fd;--canvas:#f5f8fc;--paper:#fff}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--canvas);color:var(--ink);font-family:Inter,Segoe UI,Arial,sans-serif;font-size:16px;line-height:1.7}
+a{color:#1e5c9b}a:hover{color:#143e69}.layout{max-width:1580px;margin:auto;display:grid;grid-template-columns:260px minmax(0,1fr);gap:28px;padding:28px}
+.sidebar{position:sticky;top:20px;align-self:start;background:white;border:1px solid var(--line);border-radius:12px;padding:24px 18px;max-height:calc(100vh - 40px);overflow:auto}
+.brand{font-size:13px;letter-spacing:.12em;text-transform:uppercase;font-weight:800;color:var(--accent);margin-bottom:16px}
+.sidebar nav{display:grid;gap:4px}.sidebar nav a{font-size:13px;padding:9px 11px;border-radius:7px;color:#41536c;text-decoration:none;line-height:1.35}.sidebar nav a:hover{background:#edf5fc;color:#174d80}
+main{min-width:0;background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:44px clamp(22px,4vw,66px);box-shadow:0 8px 32px rgba(30,58,88,.045)}
+.hero{padding:10px 0 38px;border-bottom:1px solid var(--line);margin-bottom:34px}.eyebrow{color:#326da5;font-size:12px;letter-spacing:.1em;text-transform:uppercase;font-weight:800}
+h1{font-size:clamp(29px,3.5vw,48px);letter-spacing:-.04em;line-height:1.17;margin:14px 0 15px}.hero-subtitle{font-size:17px;color:var(--muted);max-width:840px;margin:0}
+.doc-section{padding:10px 0 28px;border-bottom:1px solid #edf1f5;margin-bottom:27px;scroll-margin-top:20px}.doc-section:last-child{border-bottom:0}
+.section-heading{display:flex;align-items:center;gap:13px;margin:0 0 23px}.section-number{background:#e5eff9;color:#1b5288;display:inline-flex;align-items:center;justify-content:center;min-width:40px;height:40px;border-radius:10px;font-size:15px;font-weight:800}
+h2{font-size:clamp(22px,2.4vw,29px);line-height:1.3;letter-spacing:-.022em;margin:0}h3{font-size:18px;margin:25px 0 9px}.step-label{font-size:16px;margin:21px 0 3px;color:#244e77}p{margin:11px 0 18px;max-width:1000px}ul{padding-left:25px}li{margin-bottom:9px}
+.diagram{padding:14px;background:#fff;border:1px solid #dbe4ed;border-radius:12px;margin:20px 0 30px}.diagram a{display:block;cursor:zoom-in}.diagram img{display:block;width:100%;height:auto;object-fit:contain;border-radius:4px}figcaption{font-size:12px;color:#68778b;margin:10px 3px 2px}figcaption span{color:#286baa}
+.table-wrap{width:100%;overflow-x:auto;margin:20px 0 28px;border:1px solid #cbd9e8;border-radius:10px}table{width:100%;border-collapse:collapse;text-align:left;font-size:14px;min-width:660px}th{background:#dcebf8;color:#17324c}th,td{padding:12px 14px;vertical-align:top;border:1px solid #cbd9e8}tbody tr:nth-child(even){background:#f6f9fd}tbody td:first-child{font-family:Consolas,Menlo,monospace;font-size:12.8px;white-space:nowrap}
+pre{background:#12243a;color:#dceefa;overflow:auto;padding:22px;border-radius:10px;font-size:13px;line-height:1.6;margin:15px 0 23px}code{font-family:Consolas,Menlo,monospace}
+@media(max-width:950px){.layout{display:block;padding:12px}.sidebar{position:relative;top:0;max-height:none;margin-bottom:14px}.sidebar nav{grid-template-columns:repeat(2,minmax(0,1fr))}main{padding:26px 18px}}
+@media(max-width:560px){.sidebar nav{grid-template-columns:1fr}.diagram{padding:6px}}
+@media print{body{background:white}.layout{display:block;padding:0}.sidebar{display:none}main{border:0;box-shadow:none;padding:0}.diagram img{max-height:190mm;object-fit:contain}.doc-section{break-inside:auto}.diagram,pre{break-inside:avoid}}
+</style>
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar"><div class="brand">ServiceNow VR</div><nav aria-label="Sections"><a href="#section-1">Project Overview</a>
+<a href="#section-2">2. Business problem and objective</a>
+<a href="#section-3">3. Main technologies</a>
+<a href="#section-4">4. Solution architecture</a>
+<a href="#section-5">5. Vulnerability Response data model</a>
+<a href="#section-6">6. End-to-end : High-risk server vulnerability</a>
+<a href="#section-7">7. MCP / REST API</a>
+<a href="#section-8">8. Discover-first validation checklist</a>
+<a href="#section-9">9. Security, privacy, and deployment controls</a></nav></aside>
+<main><header class="hero"><span class="eyebrow">ServiceNow · Security Operations · Vulnerability Response</span><h1>Enterprise Vulnerability Management &amp; Remediation Automation</h1><p class="hero-subtitle">Technical architecture, vulnerability data model, process workflows, API integration, and security controls</p></header>
+<section class="doc-section" id="section-1"><div class="section-heading"><span class="section-number">01</span><h2>Project Overview</h2></div>
+<p>UPS Security Operations implementation of ServiceNow Vulnerability Response (VR) supports the identification, assessment, prioritization, and remediation of security vulnerabilities across the enterprise IT infrastructure. The solution integrates with security scanning tools such as Rapid7 and Tenable to centralize vulnerability findings within ServiceNow. By leveraging CMDB data, risk-based prioritization, automated workflows, and remediation task management, the team can identify impacted assets, assign vulnerabilities to the appropriate support groups, and track remediation progress against defined SLAs. This capability enhances collaboration between security and infrastructure teams, reduces manual effort, and improves overall security visibility, compliance, and operational efficiency.</p>
+</section>
+<section class="doc-section" id="section-2"><div class="section-heading"><span class="section-number">02</span><h2>Business problem and objective</h2></div>
+<p>UPS Security Operations implementation, managing security vulnerabilities across servers, databases, applications, and other IT assets requires a centralized and structured approach. Key challenges include handling large volumes of vulnerability findings, identifying affected assets, determining remediation ownership, prioritizing critical risks, and ensuring timely resolution in accordance with established SLAs and security policies.</p>
+<h3>Key Objectives:</h3>
+<ul>
+<li>Centralized Vulnerability Management: Consolidate vulnerability findings from security scanning tools such as Rapid7 and Tenable within ServiceNow Vulnerability Response (VR).</li>
+<li>Risk-Based Prioritization: Evaluate vulnerabilities based on severity, risk scores, asset criticality, and potential business impact.</li>
+<li>Automated Remediation Workflows: Streamline vulnerable-item assignment, remediation task creation, and status tracking to reduce manual intervention.</li>
+<li>CMDB Integration: Correlate vulnerability findings with Configuration Items (CIs) to identify impacted assets and determine appropriate remediation ownership.</li>
+<li>Monitoring and Reporting: Provide visibility into vulnerability status, remediation progress, SLA compliance, and overall security risk exposure.</li>
+</ul>
+</section>
+<section class="doc-section" id="section-3"><div class="section-heading"><span class="section-number">03</span><h2>Main technologies</h2></div>
+<figure class="diagram"><a aria-label="Open full-resolution diagram" href="assets/images/main-technologies.png" rel="noopener" target="_blank"><img alt="Main technologies table showing the VR platform, REST APIs, MCP, CMDB and Qualys" loading="lazy" src="assets/images/main-technologies.png"/></a><figcaption>Main technologies table showing the VR platform, REST APIs, MCP, CMDB and Qualys <span>· Select to view full size</span></figcaption></figure>
+</section>
+<section class="doc-section" id="section-4"><div class="section-heading"><span class="section-number">04</span><h2>Solution architecture</h2></div>
+<figure class="diagram"><a aria-label="Open full-resolution diagram" href="assets/images/solution-architecture.png" rel="noopener" target="_blank"><img alt="ServiceNow SecOps end-to-end solution architecture workflow" loading="lazy" src="assets/images/solution-architecture.png"/></a><figcaption>ServiceNow SecOps end-to-end solution architecture workflow <span>· Select to view full size</span></figcaption></figure>
+</section>
+<section class="doc-section" id="section-5"><div class="section-heading"><span class="section-number">05</span><h2>Vulnerability Response data model</h2></div>
+<figure class="diagram"><a aria-label="Open full-resolution diagram" href="assets/images/vulnerability-response-data-model.png" rel="noopener" target="_blank"><img alt="Vulnerability Response data model and table relationships" loading="lazy" src="assets/images/vulnerability-response-data-model.png"/></a><figcaption>Vulnerability Response data model and table relationships <span>· Select to view full size</span></figcaption></figure>
+<p>The following are candidate tables identified by the repository. Availability and columns differ across ServiceNow versions/plugins: [VALIDATE]</p>
+<div class="table-wrap"><table class="data-table"><thead><tr><th>Table</th><th>Concept</th><th>Example Use</th></tr></thead><tbody><tr><td>sn_vul_vulnerable_item</td><td>Vulnerability affecting a particular CI</td><td>Main analyst work queue</td></tr><tr><td>sn_vul_entry</td><td>Vulnerability definition</td><td>Link findings to vulnerability information</td></tr><tr><td>sn_vul_third_party_entry</td><td>External-scanner vulnerability entry</td><td>Relate vendor findings</td></tr><tr><td>sn_vul_nvd_entry</td><td>NVD/CVE entry</td><td>Enrich with published CVE information</td></tr><tr><td>sn_vul_detection</td><td>Detected finding</td><td>Trace detections to vulnerable items</td></tr><tr><td>sn_vul_remediation_task</td><td>Remediation work item</td><td>Track work to resolve exposure</td></tr><tr><td>sn_vul_vul_group</td><td>Group of related vulnerabilities</td><td>Organize bulk remediation</td></tr><tr><td>sn_vul_cmdb_ci</td><td>Potential CI mapping table</td><td>Check CI association; confirm table presence</td></tr></tbody></table></div>
+</section>
+<section class="doc-section" id="section-6"><div class="section-heading"><span class="section-number">06</span><h2>End-to-end : High-risk server vulnerability</h2></div>
+<figure class="diagram"><a aria-label="Open full-resolution diagram" href="assets/images/high-risk-vulnerability-workflow.png" rel="noopener" target="_blank"><img alt="High-risk server vulnerability end-to-end flowchart" loading="lazy" src="assets/images/high-risk-vulnerability-workflow.png"/></a><figcaption>High-risk server vulnerability end-to-end flowchart <span>· Select to view full size</span></figcaption></figure>
+<p>Qualys identifies security vulnerabilities across enterprise servers and applications. The findings are integrated into ServiceNow Vulnerability Response (VR), where affected assets are mapped to CMDB Configuration Items (CIs). ServiceNow prioritizes vulnerabilities based on risk and severity, assigns remediation activities to the appropriate support teams, and tracks resolution through established IT processes.</p>
+<p><strong>Ingestion:</strong> Qualys vulnerability findings are imported into ServiceNow VR through configured integrations.</p>
+<p><strong>Normalization:</strong> ServiceNow processes vulnerability data and maps findings to the corresponding vulnerable items and CMDB assets.</p>
+<p><strong>Prioritization:</strong> Vulnerabilities are evaluated based on severity, risk scores, asset criticality, and business impact.</p>
+<p><strong>Retrieval:</strong> ServiceNow REST APIs provide authorized access to vulnerable-item records and remediation information.</p>
+<p><strong>Assignment:</strong> Remediation tasks are assigned to responsible infrastructure or application support teams based on CI ownership.</p>
+<p><strong>Remediation:</strong> IT teams implement security patches, configuration changes, or approved mitigation measures.</p>
+<p><strong>Verification:</strong> Qualys rescans affected assets to validate remediation, and ServiceNow updates the corresponding vulnerability records.</p>
+<p><strong>Reporting:</strong> ServiceNow dashboards and Aggregate APIs provide visibility into vulnerability status, risk levels, assignment groups, and SLA compliance.</p>
+<h3>Detailed execution flow</h3>
+<p>Step 1 — Discovery: a scanner reports a finding identified by CVE / plugin/asset. The scanner integration, rather than the Python wrapper, is responsible for importing the finding into ServiceNow.</p>
+<p>Step 2 — Identification and normalization: the platform maps vulnerability metadata and affected host identifiers to vulnerability entries and vulnerable items. Duplicate handling and import transformations are instance-specific.</p>
+<p>Step 3 — CMDB correlation: the finding is associated with a configuration item. Missing or incorrect CI matches can undermine ownership assignment and impact-based prioritization.</p>
+<p>Step 4 — Risk and routing: ServiceNow VR prioritizes the item using configured risk inputs; assignment rules identify the responsible remediation group. Never assume an identical formula or choice value across instances.</p>
+<p>Step 5 — API visibility: the repository client reads authorized vulnerable items using the ServiceNow Table API; a reporting client can filter, paginate and group the returned dataset.</p>
+<p>Step 6 — Remediation and verification: the owning team applies a change or mitigation through approved IT processes; a subsequent scan or validation provides evidence before closure.</p>
+<p>Step 7 — Operational reporting: report outstanding high-risk findings, age, ownership and due-date/SLA exposure with definitions agreed by the security organization.</p>
+</section>
+<section class="doc-section" id="section-7"><div class="section-heading"><span class="section-number">07</span><h2>MCP / REST API</h2></div>
+<figure class="diagram"><a aria-label="Open full-resolution diagram" href="assets/images/mcp-rest-api-flow.png" rel="noopener" target="_blank"><img alt="MCP REST API flow for accessing ServiceNow vulnerability records" loading="lazy" src="assets/images/mcp-rest-api-flow.png"/></a><figcaption>MCP REST API flow for accessing ServiceNow vulnerability records <span>· Select to view full size</span></figcaption></figure>
+<p>Client connects to ServiceNow Vulnerability Response (VR) through REST APIs to retrieve vulnerability information securely.</p>
+<h3 class="step-label">Step 1 – MCP Tool Call</h3>
+<p>MCP client sends a request to ServiceNow to retrieve vulnerability information, such as open vulnerabilities, risk scores, and assigned support groups.</p>
+<h3 class="step-label">Step 2 – Authentication &amp; Access Control</h3>
+<p>ServiceNow verifies the integration credentials and checks whether the client has permission to access the requested vulnerability records.</p>
+<h3 class="step-label">Step 3 – ServiceNow REST Table API</h3>
+<p>The REST Table API processes the request and retrieves the requested vulnerability information from ServiceNow.</p>
+<h3 class="step-label">Step 4 – VR Table Records</h3>
+<p>ServiceNow accesses the relevant Vulnerability Response tables, such as sn_vul_vulnerable_item, to retrieve vulnerability details, affected assets, risk scores, and assignment information.</p>
+<h3 class="step-label">Step 5 – JSON Response &amp; Pagination</h3>
+<p>ServiceNow returns the requested information in JSON format. Pagination allows the client to retrieve large numbers of records in smaller batches.</p>
+<h3 class="step-label">Step 6 – Filter, Aggregate &amp; Redact</h3>
+<p>The client processes the response to filter vulnerabilities by severity, risk, or assignment group. It can also calculate summary counts and hide sensitive information before displaying the results</p>
+<pre><code> Example:
+# Local MCP server
+servicenow-mcp
+
+# Local-only streamable HTTP transport for development
+servicenow-mcp --transport streamable-http --host 127.0.0.1 --port 8000
+
+VR query recipe reproduced conceptually from the project SecOps workflow. In action-routed/condensed mode, operation names and payload placement may differ from the verbose tool examples; check MCP_TOOL_MODE and the live tool schema.
+{
+  "table": "sn_vul_vulnerable_item",
+  "sysparm_query": "active=true^ORDERBYDESCrisk_score",
+  "sysparm_fields": "number,vulnerability,cmdb_ci,risk_score,state,assignment_group",
+  "sysparm_limit": 25,
+  "sysparm_display_value": "true"
+}</code></pre>
+</section>
+<section class="doc-section" id="section-8"><div class="section-heading"><span class="section-number">08</span><h2>Discover-first validation checklist</h2></div>
+<ul>
+<li>Verify that the Vulnerability Response modules are available and the required user roles and permissions are configured.</li>
+<li>Table Verification: Query sys_db_object to confirm that the required sn_vul_ tables exist.</li>
+<li>Field Validation: Verify that risk_score, cmdb_ci, and assignment group are available in sn_vul_vulnerable_item.</li>
+<li>State Validation: Review sys_choice to confirm the configured vulnerability state values and labels.</li>
+<li>Record Retrieval: Retrieve a sample record from sn_vul_vulnerable_item with display values enabled.</li>
+<li>Execute a read-only GET request with a small record limit before applying additional filters.</li>
+<li>Compare API response records and values with the corresponding ServiceNow UI list view.</li>
+<li>Verify ACL enforcement, audit logging, and secure handling of credentials and sensitive information.</li>
+<li>Confirm that vulnerability data is accurate, accessible to authorized users, and ready for remediation tracking and reporting.</li>
+</ul>
+</section>
+<section class="doc-section" id="section-9"><div class="section-heading"><span class="section-number">09</span><h2>Security, privacy, and deployment controls</h2></div>
+<ul>
+<li>Use a dedicated integration identity with least-privilege table/record ACLs, not broad admin credentials.</li>
+<li>Prefer approved token delegation/OAuth if the deployment requires it; rotate secrets and never commit them.</li>
+<li>Keep TLS certificate verification enabled. Use a trusted CA bundle rather than disabling validation.</li>
+<li>For network-exposed MCP deployments, require authentication, TLS, host restrictions, and appropriately trusted ingress.</li>
+<li>Begin with bounded read-only calls. Live record changes need separate authorization and rollback planning.</li>
+<li>Keep telemetry metadata-only unless approved. Do not log vulnerability details, secrets, prompts, or raw payloads by default.</li>
+<li>Use timeouts, bounded pagination, retry/backoff, and monitoring appropriate to your environment (engineering recommendations).</li>
+</ul>
+</section>
+</main>
+</div>
+</body>
+</html>
